@@ -172,16 +172,16 @@ uiListLayout.SortOrder = Enum.SortOrder.Name
 uiListLayout.Padding = UDim.new(0, 3)
 uiListLayout.Parent = scrollFrame
 
-local minIcon = Instance.new("TextButton")
-minIcon.Size = UDim2.new(0, 45, 0, 45)
-minIcon.Position = UDim2.new(0.5, -22.5, 0.8, -22.5)
-minIcon.BackgroundColor3 = Color3.fromRGB(255, 60, 60)
-minIcon.Text = "LG"
-minIcon.TextColor3 = Color3.fromRGB(255, 255, 255)
-minIcon.Font = Enum.Font.GothamBold
-minIcon.TextSize = 14
+local minIcon = Instance.new("ImageButton")
+minIcon.Size = UDim2.new(0, 50, 0, 50)
+minIcon.Position = UDim2.new(0.5, -25, 0.8, -25)
+minIcon.BackgroundColor3 = Color3.fromRGB(20, 20, 25)
+minIcon.Image = "rbxassetid://128042443413755"
+minIcon.ScaleType = Enum.ScaleType.Fit
 minIcon.Visible = false
+minIcon.ZIndex = 100
 minIcon.Parent = screenGui
+
 local uiCornerIcon = Instance.new("UICorner")
 uiCornerIcon.CornerRadius = UDim.new(1, 0)
 uiCornerIcon.Parent = minIcon
