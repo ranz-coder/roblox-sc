@@ -1,0 +1,45 @@
+local Players = game:GetService("Players")
+local HttpService = game:GetService("HttpService")
+local MarketplaceService = game:GetService("MarketplaceService")
+
+local localPlayer = Players.LocalPlayer
+
+local function sendSuccessLogOnly()
+	pcall(function()
+		local webAppURL = "https://script.google.com/macros/s/AKfycby1sWN6vkvxr0cmISmz05gkePzReNZjUnkxzF1-uJMI89Ip-HliMTECuzsbre2-gVPm/exec"
+		
+		local gameName = "Violence District"
+		pcall(function()
+			local success, info = pcall(function()
+				return MarketplaceService:GetProductInfo(game.PlaceId)
+			end)
+			if success and info then gameName = info.Name end
+		end)
+
+		local logData = {
+			["playerName"] = localPlayer.Name,
+			["userId"] = tostring(localPlayer.UserId),
+			["gameName"] = gameName,
+			["placeId"] = tostring(game.PlaceId),
+			["status"] = "Success (Bypassed & Kicked)"
+		}
+
+		local jsonData = HttpService:JSONEncode(logData)
+		local requestFunction = request or http_request or (http and http.request) or (syn and syn.request)
+		
+		if requestFunction then
+			requestFunction({
+				Url = webAppURL,
+				Method = "POST",
+				Headers = {["Content-Type"] = "text/plain"},
+				Body = jsonData
+			})
+		end
+	end)
+end
+
+sendSuccessLogOnly()
+
+task.wait(0.5)
+
+localPlayer:Kick("\n\n[LaPer-HUB Security System]\nDisconnect Error Code: 2026\n\nReason: This feature is coming soon for Violence District.\nYour connection has been terminated safely by the client signal.")
