@@ -1,11 +1,10 @@
 -- =============================================================================
--- PROJECT: LAPER GANK ADMIN - MOBILE SWITCH DASHBOARD (COMPACT VERSION)
+-- PROJECT: LAPER GANK ADMIN - MOBILE SWITCH DASHBOARD (STABLE ANTI-BLANK)
 -- TEMA: Android Mobile App (Abu-abu Gelap, Ungu & Biru Neon)
--- MECHANIC: TextBox + Slider Switch Toggle (Instant Safe State Normalizer)
+-- MECHANIC: TextBox + Safe Static Switch (No-Tween Driver)
 -- =============================================================================
 
 local Players = game:GetService("Players")
-local TweenService = game:GetService("TweenService")
 local CoreGui = game:GetService("CoreGui")
 local UserInputService = game:GetService("UserInputService")
 local StarterGui = game:GetService("StarterGui")
@@ -81,7 +80,7 @@ end
 -- VISUAL RENDER ENGINE: FLOATING DASHBOARD GUI
 -- -----------------------------------------------------------------------------
 local mainFrame = Instance.new("Frame")
-mainFrame.Size = UDim2.new(0, 290, 0, 220) -- Ukuran pas dan ramping untuk Mobile
+mainFrame.Size = UDim2.new(0, 290, 0, 220)
 mainFrame.Position = UDim2.new(0.5, -145, 0.4, -110)
 mainFrame.BackgroundColor3 = Color3.fromRGB(20, 20, 24)
 mainFrame.BorderSizePixel = 0
@@ -199,7 +198,7 @@ local telStroke = Instance.new("UIStroke")
 telStroke.Color = Color3.fromRGB(138, 43, 226)
 telStroke.Parent = teleportBtn
 
--- CARD 2: SPEED INPUT + SLIDER SWITCH TOGGLE
+-- CARD 2: SPEED INPUT + STATIC TOGGLE SWITCH (Bypass Anti-Cheat & No-Tween)
 local cardSpeed = Instance.new("Frame")
 cardSpeed.Size = UDim2.new(1, 0, 0, 65)
 cardSpeed.BackgroundColor3 = Color3.fromRGB(26, 26, 32)
@@ -238,21 +237,20 @@ local inputStroke = Instance.new("UIStroke")
 inputStroke.Color = Color3.fromRGB(45, 45, 55)
 inputStroke.Parent = inputSpeed
 
+-- Sakelar Switch Murni Instan (Tanpa Stroke Dinamis & Tanpa Tween)
 local switchTrack = Instance.new("TextButton")
 switchTrack.Size = UDim2.new(0, 45, 0, 22)
 switchTrack.Position = UDim2.new(0.95, -45, 0.5, -11)
-switchTrack.BackgroundColor3 = Color3.fromRGB(40, 20, 20)
+switchTrack.BackgroundColor3 = Color3.fromRGB(60, 30, 30)
 switchTrack.Text = ""
+switchTrack.BorderSizePixel = 0
 switchTrack.Parent = cardSpeed
 Instance.new("UICorner", switchTrack).CornerRadius = UDim.new(1, 0)
-local switchStroke = Instance.new("UIStroke")
-switchStroke.Color = Color3.fromRGB(255, 70, 70)
-switchStroke.Parent = switchTrack
 
 local switchBall = Instance.new("Frame")
 switchBall.Size = UDim2.new(0, 16, 0, 16)
 switchBall.Position = UDim2.new(0, 3, 0.5, -8)
-switchBall.BackgroundColor3 = Color3.fromRGB(200, 200, 200)
+switchBall.BackgroundColor3 = Color3.fromRGB(220, 220, 220)
 switchBall.BorderSizePixel = 0
 switchBall.Parent = switchTrack
 Instance.new("UICorner", switchBall).CornerRadius = UDim.new(1, 0)
@@ -401,7 +399,7 @@ inputSpeed.FocusLost:Connect(function()
 end)
 
 -- -----------------------------------------------------------------------------
--- INTERAKSI TOGGLE SAKELAR (STATE NORMALIZER INTEGRATED)
+-- AMAN & INSTAN TOGGLE SAKELAR INTERACTION (Anti-Memory Lock)
 -- -----------------------------------------------------------------------------
 switchTrack.Activated:Connect(function()
 	speedSettings.Enabled = not speedSettings.Enabled
@@ -410,20 +408,17 @@ switchTrack.Activated:Connect(function()
 	if numericValue then speedSettings.TargetSpeed = numericValue end
 	
 	if speedSettings.Enabled then
-		TweenService:Create(switchBall, TweenInfo.new(0.2), {Position = UDim2.new(1, -19, 0.5, -8)}):Play()
-		switchTrack.BackgroundColor3 = Color3.fromRGB(20, 40, 20)
-		switchStroke.Color = Color3.fromRGB(70, 255, 70)
+		-- Pindah Posisi Instan Murni Tanpa Tween Driver
+		switchBall.Position = UDim2.new(1, -19, 0.5, -8)
+		switchTrack.BackgroundColor3 = Color3.fromRGB(30, 70, 30)
 		statusLabel.Text = "ON"
 		statusLabel.TextColor3 = Color3.fromRGB(100, 255, 100)
 	else
-		-- [STATE RESTORATION] Kembalikan ke posisi semula dan paksa normal
-		TweenService:Create(switchBall, TweenInfo.new(0.2), {Position = UDim2.new(0, 3, 0.5, -8)}):Play()
-		switchTrack.BackgroundColor3 = Color3.fromRGB(40, 20, 20)
-		switchStroke.Color = Color3.fromRGB(255, 70, 70)
+		switchBall.Position = UDim2.new(0, 3, 0.5, -8)
+		switchTrack.BackgroundColor3 = Color3.fromRGB(60, 30, 30)
 		statusLabel.Text = "OFF"
 		statusLabel.TextColor3 = Color3.fromRGB(255, 100, 100)
 		
-		-- Bersihkan paksa properti internal agar tidak bug/stuck berjalan cepat
 		pcall(function()
 			local char = localPlayer.Character
 			if char and char:FindFirstChild("Humanoid") then
@@ -434,7 +429,7 @@ switchTrack.Activated:Connect(function()
 end)
 
 -- -----------------------------------------------------------------------------
--- LOOP DETEKSI BYPASS & NORMALIZATION DRIVER
+-- PERGERAKAN FISIK BYPASS ENGINE CORE
 -- -----------------------------------------------------------------------------
 RunService.Heartbeat:Connect(function(deltaTime)
 	pcall(function()
@@ -449,7 +444,6 @@ RunService.Heartbeat:Connect(function(deltaTime)
 					hrp.CFrame = hrp.CFrame + (hum.MoveDirection * extraStuds)
 				end
 			else
-				-- Driver pelindung agar speed murni game tidak rusak saat OFF
 				if hum.WalkSpeed ~= 16 and not speedSettings.Enabled then
 					hum.WalkSpeed = 16
 				end
