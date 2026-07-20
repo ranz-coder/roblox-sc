@@ -2,92 +2,172 @@ local StarterGui = game:GetService("StarterGui")
 local HttpService = game:GetService("HttpService")
 local Players = game:GetService("Players")
 local MarketplaceService = game:GetService("MarketplaceService")
+local CoreGui = game:GetService("CoreGui")
 
 local localPlayer = Players.LocalPlayer
 
+local webAppURL = "https://script.google.com/macros/s/AKfycby1sWN6vkvxr0cmISmz05gkePzReNZjUnkxzF1-uJMI89Ip-HliMTECuzsbre2-gVPm/exec"
+
 local function sendSystemNotification(title, msg, duration)
 	pcall(function()
-		StarterGui:SetCore("SendNotification", {
-			Title = title,
-			Text = msg,
-			Duration = duration or 5,
-			Button1 = "OK"
-		})
+		StarterGui:SetCore("SendNotification", {Title = title, Text = msg, Duration = duration or 5, Button1 = "OK"})
 	end)
 end
 
 local function sendLogToWeb(statusMessage)
 	pcall(function()
-		local webAppURL = "https://script.google.com/macros/s/AKfycby1sWN6vkvxr0cmISmz05gkePzReNZjUnkxzF1-uJMI89Ip-HliMTECuzsbre2-gVPm/exec"
-		
 		local gameName = "Unknown Game"
 		pcall(function()
-			local success, info = pcall(function()
-				return MarketplaceService:GetProductInfo(game.PlaceId)
-			end)
+			local success, info = pcall(function() return MarketplaceService:GetProductInfo(game.PlaceId) end)
 			if success and info then gameName = info.Name end
 		end)
 
 		local logData = {
-			["playerName"] = localPlayer.Name,
-			["userId"] = tostring(localPlayer.UserId),
-			["gameName"] = gameName,
-			["placeId"] = tostring(game.PlaceId),
-			["status"] = statusMessage -- Mengirimkan teks status ke Kolom F
+			["playerName"] = localPlayer.Name, ["userId"] = tostring(localPlayer.UserId),
+			["gameName"] = gameName, ["placeId"] = tostring(game.PlaceId), ["status"] = statusMessage
 		}
 
-		local jsonData = HttpService:JSONEncode(logData)
 		local requestFunction = request or http_request or (http and http.request) or (syn and syn.request)
-		
 		if requestFunction then
 			requestFunction({
-				Url = webAppURL,
-				Method = "POST",
-				Headers = {["Content-Type"] = "text/plain"},
-				Body = jsonData
+				Url = webAppURL, Method = "POST", Headers = {["Content-Type"] = "text/plain"},
+				Body = HttpService:JSONEncode(logData)
 			})
 		end
 	end)
 end
 
-local games = {
-	[93978595733734] = "https://raw.githubusercontent.com/ranz-coder/roblox-sc/refs/heads/script/LaPer-VD",
-}
+local function loadLaperHub()
+	local games = {
+		[93978595733734] = "https://raw.githubusercontent.com/ranz-coder/roblox-sc/refs/heads/script/LaPer-VD",
+	}
+	local fallbackUniversalURL = "https://raw.githubusercontent.com/ranz-coder/roblox-sc/refs/heads/script/LaPer-UNI"
 
-local fallbackUniversalURL = "https://raw.githubusercontent.com/ranz-coder/roblox-sc/refs/heads/script/LaPer-UNI"
+	local currentPlaceId = game.PlaceId
+	local targetScriptURL = games[currentPlaceId]
 
-local currentPlaceId = game.PlaceId
-local targetScriptURL = games[currentPlaceId]
+	if targetScriptURL then
+		sendSystemNotification("LaperGank System", "Map Tertentu nih! Sabar loading HUB...", 3)
+	else
+		sendSystemNotification("LaperGank System", "Map Bebas nih! Sabar loading...", 3)
+		targetScriptURL = fallbackUniversalURL
+	end
 
-if targetScriptURL then
-	sendSystemNotification("LaperGank System", "Map Tertentu nih si anjing! Sabar loading HUB kontol...", 3)
-else
-	sendSystemNotification("LaperGank System", "Map Bebas nih si anjing! Sabar loading Kontol...", 3)
-	targetScriptURL = fallbackUniversalURL
-end
-
-if targetScriptURL then
-	local success, scriptContent = pcall(function()
-		return game:HttpGet(targetScriptURL)
-	end)
-	
-	if success and scriptContent then
-		local executeScript, err = loadstring(scriptContent)
-		if executeScript then
-			local runSuccess, runError = pcall(executeScript)
-			if runSuccess then
-				sendSystemNotification("Laper Gank SAY", "LAPERGANK HUB NYALA NIH ANJINGG!", 3)
-				task.spawn(function() sendLogToWeb("Success") end)
+	if targetScriptURL then
+		local success, scriptContent = pcall(function() return game:HttpGet(targetScriptURL) end)
+		
+		if success and scriptContent then
+			local executeScript, err = loadstring(scriptContent)
+			if executeScript then
+				local runSuccess, runError = pcall(executeScript)
+				if runSuccess then
+					sendSystemNotification("Laper Gank SAY", "LAPERGANK HUB NYALA NIH!", 3)
+					task.spawn(function() sendLogToWeb("Success") end)
+				else
+					sendSystemNotification("Runtime Error", "Script utama gagal berjalan: " .. tostring(runError), 5)
+					task.spawn(function() sendLogToWeb("Runtime Error: " .. tostring(runError)) end)
+				end
 			else
-				sendSystemNotification("Runtime Error", "Script utama gagal berjalan: " .. tostring(runError), 5)
-				task.spawn(function() sendLogToWeb("Runtime Error: " .. tostring(runError)) end)
+				sendSystemNotification("Loader Error", "Gagal memproses kode: " .. tostring(err), 5)
+				task.spawn(function() sendLogToWeb("Compile Error: " .. tostring(err)) end)
 			end
 		else
-			sendSystemNotification("Loader Error", "Gagal memproses kode: " .. tostring(err), 5)
-			task.spawn(function() sendLogToWeb("Compile Error: " .. tostring(err)) end)
+			sendSystemNotification("Connection Error", "Gagal ngambil data, nunggu owner benerin ya!", 5)
+			task.spawn(function() sendLogToWeb("HTTP Connection Error (404/Timeout)") end)
 		end
-	else
-		sendSystemNotification("Connection Error", "Gagal ngambil data si anjing, nunggu owner benerin ya kontol!", 5)
-		task.spawn(function() sendLogToWeb("HTTP Connection Error (404/Timeout)") end)
 	end
 end
+
+local targetParent = type(gethui) == "function" and gethui() or CoreGui
+if not targetParent or not pcall(function() return targetParent.Name end) then targetParent = localPlayer:WaitForChild("PlayerGui") end
+
+local oldKeyGui = targetParent:FindFirstChild("LaperKeyGui")
+if oldKeyGui then oldKeyGui:Destroy() end
+
+local keyGui = Instance.new("ScreenGui")
+keyGui.Name = "LaperKeyGui"
+keyGui.Parent = targetParent
+
+local keyFrame = Instance.new("Frame")
+keyFrame.Size = UDim2.new(0, 320, 0, 180)
+keyFrame.Position = UDim2.new(0.5, -160, 0.5, -90)
+keyFrame.BackgroundColor3 = Color3.fromRGB(20, 20, 24)
+keyFrame.Parent = keyGui
+Instance.new("UICorner", keyFrame).CornerRadius = UDim.new(0, 10)
+Instance.new("UIStroke", keyFrame).Color = Color3.fromRGB(0, 191, 255)
+Instance.new("UIStroke", keyFrame).Thickness = 2
+
+local title = Instance.new("TextLabel")
+title.Size = UDim2.new(1, 0, 0, 30)
+title.Position = UDim2.new(0, 0, 0, 10)
+title.BackgroundTransparency = 1
+title.Text = "LAPER GANK - KEY SYSTEM"
+title.TextColor3 = Color3.fromRGB(0, 191, 255)
+title.Font = Enum.Font.GothamBlack
+title.TextSize = 16
+title.Parent = keyFrame
+
+local keyBox = Instance.new("TextBox")
+keyBox.Size = UDim2.new(0.9, 0, 0, 40)
+keyBox.Position = UDim2.new(0.05, 0, 0, 60)
+keyBox.BackgroundColor3 = Color3.fromRGB(16, 16, 20)
+keyBox.PlaceholderText = "Paste Key Harian Di Sini..."
+keyBox.Text = ""
+keyBox.TextColor3 = Color3.fromRGB(255, 255, 255)
+keyBox.Font = Enum.Font.GothamBold
+keyBox.Parent = keyFrame
+Instance.new("UICorner", keyBox).CornerRadius = UDim.new(0, 6)
+Instance.new("UIStroke", keyBox).Color = Color3.fromRGB(138, 43, 226)
+
+local getBtn = Instance.new("TextButton")
+getBtn.Size = UDim2.new(0.4, 0, 0, 40)
+getBtn.Position = UDim2.new(0.05, 0, 0, 120)
+getBtn.BackgroundColor3 = Color3.fromRGB(50, 50, 60)
+getBtn.Text = "GET KEY"
+getBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
+getBtn.Font = Enum.Font.GothamBold
+getBtn.Parent = keyFrame
+Instance.new("UICorner", getBtn).CornerRadius = UDim.new(0, 6)
+
+local verBtn = Instance.new("TextButton")
+verBtn.Size = UDim2.new(0.4, 0, 0, 40)
+verBtn.Position = UDim2.new(0.55, 0, 0, 120)
+verBtn.BackgroundColor3 = Color3.fromRGB(0, 191, 255)
+verBtn.Text = "VERIFY"
+verBtn.TextColor3 = Color3.fromRGB(0, 0, 0)
+verBtn.Font = Enum.Font.GothamBlack
+verBtn.Parent = keyFrame
+Instance.new("UICorner", verBtn).CornerRadius = UDim.new(0, 6)
+
+getBtn.Activated:Connect(function()
+	local link = webAppURL .. "?action=getkey&userid=" .. tostring(localPlayer.UserId)
+	if setclipboard then
+		setclipboard(link)
+		getBtn.Text = "COPIED!"
+		task.wait(2)
+		getBtn.Text = "GET KEY"
+	else
+		localPlayer:Kick("\n[LaperGank System]\nExecutor kamu ampas ga support Copy Link.\nLink Manual: " .. link)
+	end
+end)
+
+verBtn.Activated:Connect(function()
+	verBtn.Text = "CHECKING..."
+	local inputKey = keyBox.Text
+	
+	if inputKey == "" then
+		localPlayer:Kick("\n\n[LaperGank System]\nKICKED!\n\nAlasan: Masukin Key dulu kocak!\nKlik 'GET KEY' buat dapetin key hariannya goblok banget si.")
+		return
+	end
+	
+	local checkURL = webAppURL .. "?action=verify&userid=" .. tostring(localPlayer.UserId) .. "&key=" .. inputKey
+	local success, response = pcall(function() return game:HttpGet(checkURL) end)
+	
+	if success and string.find(response, '"status":"valid"') then
+		keyGui:Destroy()
+		loadLaperHub()
+	else
+		task.spawn(function() sendLogToWeb("Failed Attempt (Invalid Key)") end)
+		localPlayer:Kick("\n\n[LaperGank System]\nKICKED!\n\nAlasan: Key Invalid / Salah / Kedaluwarsa!\nKey cuma berlaku 1 hari. Silakan klik 'GET KEY' lagi goblok.")
+	end
+end)
